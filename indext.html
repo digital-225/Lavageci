@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>LavageCI — Localisation Google Maps</title>
+  <style>
+    :root {
+      --blue: #1a73e8;
+      --blue-dark: #1557b0;
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --green: #16a34a;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 32px;
+    }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+      color: #fff;
+      padding: 16px;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .topbar p {
+      margin: 4px 0 0;
+      font-size: 12.5px;
+      opacity: 0.92;
+    }
+
+    .panel {
+      margin: 14px 14px 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select, input {
+      padding: 10px 12px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      font-size: 13.5px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    select { flex: 1; min-width: 170px; font-weight: 600; }
+    input { width: 100%; margin-top: 8px; }
+
+    .btn {
+      border: none;
+      border-radius: 11px;
+      padding: 10px 13px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-gps {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-gmaps-zone {
+      background: var(--blue);
+      color: #fff;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .list-header {
+      margin: 16px 16px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .cards {
+      padding: 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 13px;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 15.5px;
+    }
+
+    .dist {
+      background: #e8f0fe;
+      color: var(--blue-dark);
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .meta {
+      margin-top: 4px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .services {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      background: #f3f4f6;
+      color: #374151;
+      font-size: 11.5px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .card-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid #f3f4f6;
+      padding-top: 10px;
+    }
+
+    .price {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .price strong { color: var(--text); font-size: 13.5px; }
+
+    .btn-link {
+      text-decoration: none;
+      background: var(--blue);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <h1>LavageCI Maps</h1>
+    <p>Localisez plusieurs lavages auto autour de votre position</p>
+  </header>
+
+  <section class="panel">
+    <div class="row">
+      <select id="spotSelect" onchange="changeSpot(this.value)">
+        <option value="palmeraie">Cocody — Palmeraie</option>
+        <option value="angre">Cocody — Angré</option>
+        <option value="plateau">Le Plateau</option>
+        <option value="yopougon">Yopougon — Sable</option>
+        <option value="marcory">Marcory — Zone 4</option>
+        <option value="treichville">Treichville</option>
+        <option value="yamoussoukro">Yamoussoukro</option>
+        <option value="bouake">Bouaké</option>
+      </select>
+      <button class="btn btn-gps" type="button" onclick="useMyGPS()">📍 Mon GPS</button>
+    </div>
+
+    <input id="filterInput" type="text" placeholder="Filtrer par nom, quartier ou service..." oninput="render()" />
+
+    <div id="statusText" class="status">Position : Cocody — Palmeraie</div>
+
+    <button id="btnAllInGMaps" class="btn btn-gmaps-zone" type="button" onclick="openSearchInGoogleMaps()">
+      🗺️ Voir tous les lavages auto de cette zone sur Google Maps
+    </button>
+  </section>
+
+  <div class="list-header">
+    <span>Lavages auto trouvés</span>
+    <span id="countLabel">0</span>
+  </div>
+
+  <main id="cardsContainer" class="cards"></main>
+
+  <script>
+    const SPOTS = {
+      palmeraie: { label: "Cocody — Palmeraie", lat: 5.3672, lng: -3.9634, query: "lavage auto Palmeraie Cocody Abidjan" },
+      angre: { label: "Cocody — Angré", lat: 5.3982, lng: -3.9875, query: "lavage auto Angre Cocody Abidjan" },
+      plateau: { label: "Le Plateau", lat: 5.3256, lng: -4.0205, query: "lavage auto Plateau Abidjan" },
+      yopougon: { label: "Yopougon — Sable", lat: 5.3415, lng: -4.0842, query: "lavage auto Yopougon Abidjan" },
+      marcory: { label: "Marcory — Zone 4", lat: 5.2932, lng: -3.9726, query: "lavage auto Zone 4 Marcory Abidjan" },
+      treichville: { label: "Treichville", lat: 5.2980, lng: -4.0110, query: "lavage auto Treichville Abidjan" },
+      yamoussoukro: { label: "Yamoussoukro", lat: 6.8276, lng: -5.2893, query: "lavage auto Yamoussoukro" },
+      bouake: { label: "Bouaké", lat: 7.6906, lng: -5.0303, query: "lavage auto Bouake" }
+    };
+
+    const STATIONS = [
+      { name: "Momei Auto Spa", area: "Cocody Angré, vers Nouveau CHU", lat: 5.3958, lng: -3.9821, price: 3500, services: ["Haute pression", "Intérieur", "Lustrage"] },
+      { name: "Car Wash +", area: "Cocody Riviera III, Lycée Français", lat: 5.3688, lng: -3.9554, price: 3000, services: ["Haute pression", "Intérieur", "Moteur"] },
+      { name: "Lavage Jet d'Eau Palmeraie", area: "Cocody Palmeraie, Carrefour Guiro", lat: 5.3715, lng: -3.9612, price: 2500, services: ["Haute pression", "Intérieur"] },
+      { name: "Lavage Auto VIP Cocody", area: "Cocody, Bd Arsène Usher Assouan", lat: 5.3595, lng: -3.9742, price: 4000, services: ["Haute pression", "Intérieur", "Detailing"] },
+      { name: "Plateau Clean Auto", area: "Le Plateau, près Avenue Marchand", lat: 5.3241, lng: -4.0228, price: 3500, services: ["Haute pression", "Intérieur"] },
+      { name: "Lavage Éclair Zone 4", area: "Marcory Zone 4, Rue Pierre et Marie Curie", lat: 5.2948, lng: -3.9685, price: 3500, services: ["Haute pression", "Intérieur", "Lustrage"] },
+      { name: "Treichville Express Wash", area: "Treichville, Avenue 16", lat: 5.2965, lng: -4.0095, price: 2500, services: ["Haute pression", "Intérieur"] },
+      { name: "Millionnaire Carwash", area: "Yopougon, grand axe", lat: 5.3391, lng: -4.0765, price: 2500, services: ["Haute pression", "Intérieur"] },
+      { name: "Auto Zone Lavage Yopougon", area: "Yopougon, Carrefour Sable / Nouveau Goudron", lat: 5.3526, lng: -4.0794, price: 2000, services: ["Haute pression"] },
+      { name: "Lavage Full Option Yamoussoukro", area: "Yamoussoukro, axe central", lat: 6.8211, lng: -5.2764, price: 3000, services: ["Haute pression", "Intérieur", "Moteur"] },
+      { name: "B&M Royal Auto Care", area: "Yamoussoukro, Habitat", lat: 6.8325, lng: -5.2841, price: 3500, services: ["Haute pression", "Intérieur", "Lustrage"] },
+      { name: "Lavage Auto Fast Clean", area: "Bouaké, Commerce", lat: 7.6884, lng: -5.0321, price: 2500, services: ["Haute pression", "Intérieur"] }
+    ];
+
+    let currentPos = {
+      lat: SPOTS.palmeraie.lat,
+      lng: SPOTS.palmeraie.lng,
+      label: SPOTS.palmeraie.label,
+      query: SPOTS.palmeraie.query
+    };
+
+    function distanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function changeSpot(key) {
+      const s = SPOTS[key];
+      if (!s) return;
+      currentPos = { lat: s.lat, lng: s.lng, label: s.label, query: s.query };
+      document.getElementById("statusText").textContent = `Position : ${s.label}`;
+      render();
+    }
+
+    function useMyGPS() {
+      const status = document.getElementById("statusText");
+      if (!navigator.geolocation) {
+        status.textContent = "GPS non disponible sur cet appareil.";
+        return;
+      }
+      status.textContent = "Recherche de votre position GPS...";
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          currentPos = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            label: `GPS actif (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`,
+            query: `lavage auto @${pos.coords.latitude.toFixed(5)},${pos.coords.longitude.toFixed(5)}`
+          };
+          status.textContent = `Position : ${currentPos.label}`;
+          render();
+        },
+        () => {
+          status.textContent = "Localisation refusée ou indisponible : repère conservé.";
+        },
+        { enableHighAccuracy: true, timeout: 7000 }
+      );
+    }
+
+    function openSearchInGoogleMaps() {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentPos.query)}`;
+      window.open(url, "_blank", "noopener");
+    }
+
+    function gmapsRouteUrl(st) {
+      return `https://www.google.com/maps/dir/?api=1&origin=${currentPos.lat},${currentPos.lng}&destination=${st.lat},${st.lng}&travelmode=driving`;
+    }
+
+    function render() {
+      const q = document.getElementById("filterInput").value.trim().toLowerCase();
+      const sorted = STATIONS
+        .map(st => ({ ...st, dist: distanceKm(currentPos.lat, currentPos.lng, st.lat, st.lng) }))
+        .filter(st => !q ||
+          st.name.toLowerCase().includes(q) ||
+          st.area.toLowerCase().includes(q) ||
+          st.services.some(s => s.toLowerCase().includes(q))
+        )
+        .sort((a, b) => a.dist - b.dist);
+
+      document.getElementById("countLabel").textContent = `${sorted.length} stations`;
+      const container = document.getElementById("cardsContainer");
+
+      container.innerHTML = sorted.map(st => `
+        <article class="card">
+          <div class="card-top">
+            <h2>${st.name}</h2>
+            <span class="dist">${st.dist.toFixed(1)} km</span>
+          </div>
+          <div class="meta">📍 ${st.area}</div>
+          <div class="services">
+            ${st.services.map(s => `<span class="tag">${s}</span>`).join("")}
+          </div>
+          <div class="card-actions">
+            <div class="price">Dès <strong>${st.price.toLocaleString("fr-FR")} FCFA</strong></div>
+            <a class="btn-link" href="${gmapsRouteUrl(st)}" target="_blank" rel="noopener">Google Maps →</a>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    render();
+  </script>
+</body>
+</html>
